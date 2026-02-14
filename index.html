@@ -1,148 +1,281 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Carta para Michelle ❤️</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Para Michelle</title>
 
-<style>
+  <!-- (Opcional) Fuente bonita. Si no carga, usa la del sistema. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
-body{
-    margin:0;
-    height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:linear-gradient(135deg,#ff9aa2,#ffdde1);
-    font-family:Arial, Helvetica, sans-serif;
-    overflow:hidden;
-    cursor:pointer;
-}
+  <style>
+    :root{
+      --bg1:#0b0b12;
+      --bg2:#1b0f1c;
+      --heart1:#ff3b6b;
+      --heart2:#ff6aa2;
+      --paper:#fff7f2;
+      --ink:#2a1a1f;
+      --shadow: 0 20px 60px rgba(0,0,0,.45);
+    }
 
-.container{
-    position:relative;
-    text-align:center;
-}
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      min-height:100dvh;
+      display:grid;
+      place-items:center;
+      background: radial-gradient(1200px 700px at 50% 30%, rgba(255,70,155,.18), transparent 60%),
+                  radial-gradient(900px 600px at 20% 80%, rgba(255,70,155,.10), transparent 55%),
+                  linear-gradient(160deg, var(--bg1), var(--bg2));
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: #fff;
+      overflow:hidden;
+    }
 
-.heart{
-    position:relative;
-    width:200px;
-    height:180px;
-    transform:rotate(-45deg);
-    background:#ff2e63;
-    margin:auto;
-    transition:1s ease;
-}
+    .scene{
+      width:min(820px, 92vw);
+      padding: 28px 18px 46px;
+      text-align:center;
+      position:relative;
+    }
 
-.heart:before,
-.heart:after{
-    content:"";
-    position:absolute;
-    width:200px;
-    height:180px;
-    background:#ff2e63;
-    border-radius:50%;
-}
+    .hint{
+      opacity:.85;
+      font-size: 14px;
+      margin-top: 18px;
+      user-select:none;
+    }
 
-.heart:before{
-    top:-100px;
-    left:0;
-}
+    /* Botón invisible que cubre el corazón */
+    .heart-button{
+      appearance:none;
+      border:0;
+      background:transparent;
+      padding:0;
+      cursor:pointer;
+      display:inline-grid;
+      place-items:center;
+      margin-top: 8px;
+      position:relative;
+      outline-offset: 8px;
+    }
+    .heart-button:focus-visible{
+      outline: 2px solid rgba(255,255,255,.6);
+      border-radius: 18px;
+    }
 
-.heart:after{
-    left:100px;
-    top:0;
-}
+    .heart-wrap{
+      width: min(420px, 78vw);
+      aspect-ratio: 1 / 1;
+      position:relative;
+      filter: drop-shadow(0 18px 28px rgba(0,0,0,.55));
+    }
 
-.name{
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%) rotate(45deg);
-    color:white;
-    font-size:28px;
-    font-weight:bold;
-    z-index:2;
-}
+    .heart-half{
+      position:absolute;
+      inset:0;
+      transition: transform 900ms cubic-bezier(.2,.8,.2,1);
+      will-change: transform;
+    }
 
-.left, .right{
-    position:absolute;
-    width:50%;
-    height:100%;
-    top:0;
-    background:#ff2e63;
-    transition:1s ease;
-}
+    .heart-half svg{
+      width:100%;
+      height:100%;
+      display:block;
+    }
 
-.left{
-    left:0;
-    transform-origin:left;
-}
+    /* Efecto de “latido” suave al inicio */
+    .heart-wrap{
+      animation: pulse 2.2s ease-in-out infinite;
+    }
+    body.open .heart-wrap{
+      animation: none;
+    }
+    @keyframes pulse{
+      0%,100%{ transform: scale(1); }
+      50%{ transform: scale(1.03); }
+    }
 
-.right{
-    right:0;
-    transform-origin:right;
-}
+    /* Apertura */
+    body.open .heart-half.left{
+      transform: translateX(-140px) rotate(-10deg);
+    }
+    body.open .heart-half.right{
+      transform: translateX(140px) rotate(10deg);
+    }
 
-.open .left{
-    transform:rotateY(-120deg);
-}
+    /* Carta */
+    .letter{
+      width: min(640px, 92vw);
+      margin: 22px auto 0;
+      background: var(--paper);
+      color: var(--ink);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 22px 22px 18px;
+      text-align:left;
 
-.open .right{
-    transform:rotateY(120deg);
-}
+      opacity: 0;
+      transform: translateY(20px) scale(.985);
+      transition: opacity 550ms ease, transform 550ms ease;
+      pointer-events:none;
+    }
+    body.open .letter{
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events:auto;
+      transition-delay: 180ms;
+    }
 
-.letter{
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%) scale(0);
-    width:320px;
-    padding:25px;
-    background:white;
-    border-radius:12px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.25);
-    transition:1s ease;
-}
+    .letter .title{
+      font-family: "Great Vibes", cursive;
+      font-size: clamp(34px, 5vw, 54px);
+      margin: 6px 0 10px;
+      line-height: 1;
+    }
+    .letter .content{
+      font-size: 16px;
+      line-height: 1.6;
+      margin: 0 0 14px;
+      white-space: pre-wrap; /* respeta saltos de línea */
+    }
+    .letter .signature{
+      font-weight: 600;
+      margin-top: 6px;
+    }
 
-.open .letter{
-    transform:translate(-50%,-50%) scale(1);
-}
+    /* Pequeña nota */
+    .small{
+      font-size: 12px;
+      opacity: .7;
+      margin-top: 10px;
+    }
 
-.letter h2{
-    margin-top:0;
-    color:#ff2e63;
-}
-
-</style>
+    /* Responsivo */
+    @media (max-width: 520px){
+      body.open .heart-half.left{ transform: translateX(-105px) rotate(-10deg); }
+      body.open .heart-half.right{ transform: translateX(105px) rotate(10deg); }
+      .letter{ padding: 18px 16px 14px; }
+    }
+  </style>
 </head>
 
 <body>
+  <main class="scene">
+    <button class="heart-button" id="toggle" aria-label="Abrir la carta">
+      <div class="heart-wrap" aria-hidden="true">
+        <!-- MITAD IZQUIERDA -->
+        <div class="heart-half left">
+          <svg viewBox="0 0 512 512" role="img" aria-label="Corazón">
+            <defs>
+              <linearGradient id="gLeft" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="var(--heart2)"/>
+                <stop offset="1" stop-color="var(--heart1)"/>
+              </linearGradient>
+              <clipPath id="clipLeft">
+                <rect x="0" y="0" width="256" height="512"></rect>
+              </clipPath>
+            </defs>
 
-<div class="container" onclick="openHeart()">
+            <g clip-path="url(#clipLeft)">
+              <!-- Corazón -->
+              <path
+                fill="url(#gLeft)"
+                d="M256 472s-32-25-62-47c-79-58-146-117-146-203
+                   0-62 45-110 104-110 41 0 73 20 104 55
+                   31-35 63-55 104-55 59 0 104 48 104 110
+                   0 86-67 145-146 203-30 22-62 47-62 47z"
+              />
+              <!-- Texto dentro (se recorta a la mitad también) -->
+              <text
+                x="256" y="295"
+                text-anchor="middle"
+                font-size="64"
+                font-family="Great Vibes, cursive"
+                fill="rgba(255,255,255,.92)"
+                style="paint-order:stroke; stroke: rgba(0,0,0,.18); stroke-width: 6px;"
+              >Michelle</text>
+            </g>
+          </svg>
+        </div>
 
-    <div id="heartBox">
-        <div class="heart"></div>
-        <div class="name">Michelle</div>
+        <!-- MITAD DERECHA -->
+        <div class="heart-half right">
+          <svg viewBox="0 0 512 512" role="img" aria-label="Corazón">
+            <defs>
+              <linearGradient id="gRight" x1="1" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="var(--heart2)"/>
+                <stop offset="1" stop-color="var(--heart1)"/>
+              </linearGradient>
+              <clipPath id="clipRight">
+                <rect x="256" y="0" width="256" height="512"></rect>
+              </clipPath>
+            </defs>
 
-        <div class="left"></div>
-        <div class="right"></div>
-    </div>
+            <g clip-path="url(#clipRight)">
+              <path
+                fill="url(#gRight)"
+                d="M256 472s-32-25-62-47c-79-58-146-117-146-203
+                   0-62 45-110 104-110 41 0 73 20 104 55
+                   31-35 63-55 104-55 59 0 104 48 104 110
+                   0 86-67 145-146 203-30 22-62 47-62 47z"
+              />
+              <text
+                x="256" y="295"
+                text-anchor="middle"
+                font-size="64"
+                font-family="Great Vibes, cursive"
+                fill="rgba(255,255,255,.92)"
+                style="paint-order:stroke; stroke: rgba(0,0,0,.18); stroke-width: 6px;"
+              >Michelle</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </button>
 
-    <div class="letter">
-        <h2>Para Michelle ❤️</h2>
-        <p>
-            Amor, espero que te guste mi carta, en verdad te quisiera dar flores o algo que siempre hayas querido, aun asi se que valoras cualquier cosa que haga, como siempre, en verdad me siento muy afortunado de ternete conmigo cada dia, contigo a mi lado nada es aburrido y siempre estoy feliz, gracias por estar para mi aunque a veces estes estresada, siempre estare agradecido contigo por darme la oportunidad de desmotrarte mi amor
-        </p>
-    </div>
+    <div class="hint" id="hint">Haz click para abrir 💌</div>
 
-</div>
+    <section class="letter" id="letter" aria-live="polite">
+      <div class="title">Mi carta para ti</div>
 
-<script>
-function openHeart(){
-    document.body.classList.toggle("open");
-}
-</script>
+      <!-- ✅ AQUÍ EDITAS TU TEXTO (puedes poner saltos de línea) -->
+      <p class="content" id="letterText">Hola Cachetona,
 
+          Amor, espero que te guste mi carta, en verdad te quisiera dar flores o algo que siempre hayas querido, aun asi se que valoras cualquier cosa que haga, como siempre, en verdad me siento muy afortunado de ternete conmigo cada dia, contigo a mi lado nada es aburrido y siempre estoy feliz, gracias por estar para mi aunque a veces estes estresada, siempre estare agradecido contigo por darme la oportunidad de desmotrarte mi amor
+
+Con cariño,</p>
+
+      <!-- ✅ FIRMA (opcional) -->
+      <div class="signature" id="signature">Tu nombre aquí</div>
+
+      <div class="small">Tip: vuelve a hacer click para cerrar.</div>
+    </section>
+  </main>
+
+  <script>
+    const toggleBtn = document.getElementById("toggle");
+    const hint = document.getElementById("hint");
+
+    function setOpen(isOpen){
+      document.body.classList.toggle("open", isOpen);
+      toggleBtn.setAttribute("aria-label", isOpen ? "Cerrar la carta" : "Abrir la carta");
+      hint.textContent = isOpen ? "Haz click para cerrar 💗" : "Haz click para abrir 💌";
+    }
+
+    // Click en cualquier parte del botón/corazón
+    toggleBtn.addEventListener("click", () => {
+      const isOpen = document.body.classList.contains("open");
+      setOpen(!isOpen);
+    });
+
+    // Opcional: tecla Escape para cerrar
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") setOpen(false);
+    });
+  </script>
 </body>
 </html>
