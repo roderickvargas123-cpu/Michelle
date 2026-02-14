@@ -33,25 +33,37 @@
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color: #fff;
       overflow:hidden;
-}
+    }
 
     /* Canvas de efectos (corazones cayendo) */
-        #fx{
-          position: fixed;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          z-index: 0;
-          pointer-events: none; /* no bloquea clicks del contenido */
-        }
-
+    #fx{
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none; /* no bloquea clicks del contenido */
+      opacity: 1;
+      transition: opacity 750ms ease;
+    }
+    body.phase2 #fx{
+      opacity: 0;
+    }
 
     .scene{
       width:min(820px, 92vw);
       padding: 28px 18px 46px;
       text-align:center;
       position:relative;
-          z-index: 1; /* encima del canvas */
+      z-index: 1; /* encima del canvas */
+      transition: opacity 750ms ease, transform 750ms ease;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    body.phase2 .scene{
+      opacity: 0;
+      transform: translateY(10px) scale(.985);
+      pointer-events:none;
     }
 
     .hint{
@@ -84,6 +96,14 @@
       aspect-ratio: 1 / 1;
       position:relative;
       filter: drop-shadow(0 18px 28px rgba(0,0,0,.55));
+      animation: pulse 2.2s ease-in-out infinite;
+    }
+    body.open .heart-wrap{
+      animation: none;
+    }
+    @keyframes pulse{
+      0%,100%{ transform: scale(1); }
+      50%{ transform: scale(1.03); }
     }
 
     .heart-half{
@@ -99,18 +119,6 @@
       display:block;
     }
 
-    /* Efecto de “latido” suave al inicio */
-    .heart-wrap{
-      animation: pulse 2.2s ease-in-out infinite;
-    }
-    body.open .heart-wrap{
-      animation: none;
-    }
-    @keyframes pulse{
-      0%,100%{ transform: scale(1); }
-      50%{ transform: scale(1.03); }
-    }
-
     /* Apertura */
     body.open .heart-half.left{
       transform: translateX(-140px) rotate(-10deg);
@@ -119,7 +127,7 @@
       transform: translateX(140px) rotate(10deg);
     }
 
-    /* Carta */
+    /* Carta (base: oculta) */
     .letter{
       width: min(640px, 92vw);
       margin: 22px auto 0;
@@ -135,11 +143,19 @@
       transition: opacity 550ms ease, transform 550ms ease;
       pointer-events:none;
     }
-    body.open .letter{
+    /* Carta 1: aparece al abrir */
+    body.open .letter1{
       opacity: 1;
       transform: translateY(0) scale(1);
       pointer-events:auto;
       transition-delay: 180ms;
+    }
+    /* Carta 2: aparece en la fase final */
+    body.phase2 .letter2{
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events:auto;
+      transition-delay: 220ms;
     }
 
     .letter .title{
@@ -166,86 +182,57 @@
       margin-top: 10px;
     }
 
+    /* ======= FASE 2 (nuevo corazón + nueva carta) ======= */
+    .final{
+      width:min(820px, 92vw);
+      padding: 28px 18px 46px;
+      text-align:center;
+      position:relative;
+      z-index: 1;
+
+      opacity: 0;
+      transform: translateY(18px) scale(.985);
+      pointer-events:none;
+      transition: opacity 750ms ease, transform 750ms ease;
+      transition-delay: 160ms;
+    }
+    body.phase2 .final{
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events:auto;
+    }
+
+    .final-heart{
+      width: min(520px, 85vw);
+      aspect-ratio: 1 / 1;
+      margin: 0 auto 10px;
+      position:relative;
+      filter: drop-shadow(0 26px 40px rgba(0,0,0,.55));
+      animation: bigPulse 1.35s ease-in-out infinite;
+      will-change: transform;
+    }
+    .final-heart::before{
+      content:"";
+      position:absolute;
+      inset:-18%;
+      background: radial-gradient(650px 480px at 50% 40%, rgba(255, 85, 170, .38), transparent 60%),
+                  radial-gradient(520px 420px at 70% 70%, rgba(255, 140, 210, .22), transparent 58%);
+      filter: blur(16px);
+      z-index:-1;
+    }
+    .final-heart svg{ width:100%; height:100%; display:block; }
+
+    @keyframes bigPulse{
+      0%,100%{ transform: scale(1); }
+      50%{ transform: scale(1.07); }
+    }
+
     /* Responsivo */
     @media (max-width: 520px){
       body.open .heart-half.left{ transform: translateX(-105px) rotate(-10deg); }
       body.open .heart-half.right{ transform: translateX(105px) rotate(10deg); }
       .letter{ padding: 18px 16px 14px; }
     }
-  
-    /* Carta con contorno rosa iluminado (aplica a ambas cartas) */
-    .letter.glow{
-      border: 2px solid rgba(255, 70, 180, .92);
-      box-shadow: var(--shadow),
-                  0 0 0 3px rgba(255, 70, 180, .32),
-                  0 0 42px rgba(255, 70, 180, .55),
-                  0 0 90px rgba(255, 70, 180, .22);
-    }
-
-    /* Corazón intermedio (sale a los 20s) */
-    .next-heart{
-      display: block;
-      position: relative;
-      z-index: 2;
-      width: min(240px, 70vw);
-      margin: 22px auto 0;
-      opacity: 0;
-      transform: translateY(18px) scale(.92);
-      transition: opacity 500ms ease, transform 500ms ease;
-      pointer-events: none;
-      filter: drop-shadow(0 18px 28px rgba(0,0,0,.55));
-      user-select: none;
-    }
-    .next-heart button{
-      width: 100%;
-      border: 0;
-      background: transparent;
-      padding: 0;
-      cursor: pointer;
-      display: block;
-    }
-    .next-heart svg{ width: 100%; height: auto; display:block; }
-
-    /* Cuando pasan 20s: la primera carta se “convierte” en corazón */
-    body.to-heart #letter{
-      opacity: 0 !important;
-      transform: translateY(18px) scale(.985) !important;
-      pointer-events: none !important;
-      transition-delay: 0ms !important;
-    }
-    body.show-second #letter{
-      opacity: 0 !important;
-      transform: translateY(18px) scale(.985) !important;
-      pointer-events: none !important;
-      transition-delay: 0ms !important;
-    }
-    body.to-heart .next-heart{
-      opacity: 1;
-      transform: translateY(0) scale(1);
-      pointer-events: auto;
-      transition-delay: 120ms;
-    }
-
-    /* Segunda carta (oculta hasta que se presione el corazón) */
-    #letter2{
-      opacity: 0;
-      transform: translateY(20px) scale(.985);
-      pointer-events: none;
-    }
-    body.show-second #letter2{
-      opacity: 1;
-      transform: translateY(0) scale(1);
-      pointer-events: auto;
-      transition-delay: 140ms;
-    }
-    body.show-second .next-heart{
-      opacity: 1;
-      transform: translateY(0) scale(.78);
-      pointer-events: none; /* decorativo cuando ya está la 2da carta */
-      transition-delay: 0ms;
-      margin: 10px auto 14px;
-    }
-
   </style>
 </head>
 
@@ -328,7 +315,7 @@
 
     <div class="hint" id="hint">Haz click para abrir 💌</div>
 
-    <section class="letter glow" id="letter" aria-live="polite">
+    <section class="letter letter1" id="letter" aria-live="polite">
       <div class="title">Mi carta para ti</div>
 
       <!-- ✅ AQUÍ EDITAS TU TEXTO (puedes poner saltos de línea) -->
@@ -341,114 +328,124 @@ Te amo ,</p>
       <!-- ✅ FIRMA (opcional) -->
       <div class="signature" id="signature">De rick</div>
     </section>
-    <!-- Corazón que aparece 20s después (click para ver nueva carta) -->
-    <div class="next-heart" id="nextHeart" aria-hidden="false">
-      <button type="button" aria-label="Abrir la segunda carta">
-        <svg viewBox="0 0 512 512" role="img" aria-label="Corazón">
-          <defs>
-            <linearGradient id="gNext" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="var(--heart2)"/>
-              <stop offset="1" stop-color="var(--heart1)"/>
-            </linearGradient>
-          </defs>
-          <path
-            fill="url(#gNext)"
-            d="M256 472s-32-25-62-47c-79-58-146-117-146-203
-               0-62 45-110 104-110 41 0 73 20 104 55
-               31-35 63-55 104-55 59 0 104 48 104 110
-               0 86-67 145-146 203-30 22-62 47-62 47z"
-          />
-          <text
-            x="256" y="305"
-            text-anchor="middle"
-            font-size="52"
-            font-family="Great Vibes, cursive"
-            fill="rgba(255,255,255,.92)"
-            style="paint-order:stroke; stroke: rgba(0,0,0,.18); stroke-width: 6px;"
-          >Tócame</text>
-        </svg>
-      </button>
+  </main>
+
+  <!-- ======= FASE 2 (aparece 20s después de abrir) ======= -->
+  <section class="final" id="final" aria-live="polite">
+    <div class="final-heart" aria-hidden="true">
+      <svg viewBox="0 0 512 512" role="img" aria-label="Corazón grande">
+        <defs>
+          <linearGradient id="gFinal" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#ffb3d4"/>
+            <stop offset="0.45" stop-color="#ff6aa2"/>
+            <stop offset="1" stop-color="#ff3b6b"/>
+          </linearGradient>
+          <filter id="glowFinal" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="6" result="blur"/>
+            <feMerge>
+              <feMergeNode in="blur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+
+        <path
+          filter="url(#glowFinal)"
+          fill="url(#gFinal)"
+          d="M256 472s-32-25-62-47c-79-58-146-117-146-203
+             0-62 45-110 104-110 41 0 73 20 104 55
+             31-35 63-55 104-55 59 0 104 48 104 110
+             0 86-67 145-146 203-30 22-62 47-62 47z"
+        />
+
+        <text
+          x="256" y="300"
+          text-anchor="middle"
+          font-size="64"
+          font-family="Great Vibes, cursive"
+          fill="rgba(255,255,255,.95)"
+          style="paint-order:stroke; stroke: rgba(0,0,0,.18); stroke-width: 6px;"
+        >Te amo</text>
+      </svg>
     </div>
 
-    <!-- Segunda carta -->
-    <section class="letter glow" id="letter2" aria-live="polite">
-      <div class="title">Mi segunda carta para ti</div>
+    <article class="letter letter2" id="letter2">
+      <div class="title">Una segunda cartita</div>
 
-      <!-- ✅ EDITA TU SEGUNDA CARTA AQUÍ -->
-      <p class="content" id="letterText2">De verdad te adoro y siempre me sentire orgulloso de la persona que eres, tambien por la confianza que tienes ahora conmigo, te juro que todo lo que venga de ti se quedara siempre conmigo, todo lo que has compartido conmigo de verdad lo aprecio mucho, y espero algun dia poder abrirme mas contigo, no se expresarme pero contigo aprendere a hacerlo. TE AMO CACHETONA</p>
+      <!-- ✅ AQUÍ EDITAS EL TEXTO DE LA 2DA CARTA -->
+      <p class="content" id="letterText2">De verdad te adoro y siempre me sentire orgulloso de la persona que eres, tambien por la confianza que tienes ahora conmigo, te juro que todo lo que venga de ti se quedara siempre conmigo, todo lo que has compartido conmigo de verdad lo aprecio mucho, y espero algun dia poder abrirme mas contigo, no se expresarme pero contigo aprendere a hacerlo. TE AMO CACHETONA
 
-      <div class="signature" id="signature2">Tu nombre aquí</div>
-      <div class="small">Puedes cerrar la carta principal cuando quieras.</div>
-    </section>
+Te amo,</p>
 
-  </main>
+      <div class="signature" id="signature2">De rick</div>
+    </article>
+
+    <div class="small">Tip: si quieres cambiar la 2da carta, edita el texto dentro de <b>#letterText2</b> en el HTML.</div>
+  </section>
 
   <script>
     const toggleBtn = document.getElementById("toggle");
     const hint = document.getElementById("hint");
 
-    function setOpen(isOpen){
-      document.body.classList.toggle("open", isOpen);
-      // Reiniciar etapas cada vez que abras/cierres
-      resetStages();
-      if (isOpen){
-        stageTimer = setTimeout(() => {
-          if (document.body.classList.contains("open") && !document.body.classList.contains("show-second")) {
-            // 1) la carta actual se desvanece y aparece el nuevo corazón
-            document.body.classList.add("to-heart");
+    let phase2Timer = null;
+    let phase2Active = false;
 
-            // 2) poquito después aparece la segunda carta automáticamente
-            stageTimer2 = setTimeout(() => {
-              if (document.body.classList.contains("open")) {
-                document.body.classList.add("show-second");
-              }
-            }, 650);
-          }
-        }, 20000);
+    function clearPhase2Timer(){
+      if (phase2Timer){
+        clearTimeout(phase2Timer);
+        phase2Timer = null;
       }
+    }
+
+    function activatePhase2(){
+      if (phase2Active) return;
+      phase2Active = true;
+      clearPhase2Timer();
+
+      // Oculta todo lo de la primera escena y muestra la fase final
+      document.body.classList.remove("open");
+      document.body.classList.add("phase2");
+
+      // Pausa el canvas para ahorrar recursos (se detiene solo en el próximo frame)
+      fxEnabled = false;
+      try { ctx.clearRect(0, 0, innerWidth, innerHeight); } catch(_) {}
+    }
+
+    function schedulePhase2(){
+      clearPhase2Timer();
+      phase2Timer = setTimeout(activatePhase2, 20000); // 20 segundos
+    }
+
+    function setOpen(isOpen){
+      // Si ya estamos en fase 2, ignoramos el toggle del corazón inicial
+      if (document.body.classList.contains("phase2")) return;
+
+      document.body.classList.toggle("open", isOpen);
       toggleBtn.setAttribute("aria-label", isOpen ? "Cerrar la carta" : "Abrir la carta");
       hint.textContent = isOpen ? "Haz click para cerrar 💗" : "Haz click para abrir 💌";
+
+      if (isOpen) schedulePhase2();
+      else clearPhase2Timer();
     }
 
-
-    /* ===========================
-       Etapa 2: a los 20s, la carta se convierte en corazón
-       Etapa 3: click al corazón -> segunda carta
-    ============================ */
-    const nextHeart = document.getElementById("nextHeart");
-    const letter2 = document.getElementById("letter2");
-    let stageTimer = null;
-    let stageTimer2 = null;
-
-    function resetStages(){
-      document.body.classList.remove("to-heart", "show-second");
-      if (stageTimer){
-        clearTimeout(stageTimer);
-        stageTimer = null;
-      }
-      if (stageTimer2){
-        clearTimeout(stageTimer2);
-        stageTimer2 = null;
-      }
-    }
-
-    // Click del corazón intermedio -> mostrar segunda carta
-    if (nextHeart){
-      nextHeart.addEventListener("click", (e) => {
-        e.stopPropagation();
-        document.body.classList.add("show-second");
-      });
-    }
     // Click en cualquier parte del botón/corazón
     toggleBtn.addEventListener("click", () => {
+      if (document.body.classList.contains("phase2")) return;
       const isOpen = document.body.classList.contains("open");
       setOpen(!isOpen);
     });
 
-    // Opcional: tecla Escape para cerrar
+    // Opcional: tecla Escape para cerrar (solo antes de la fase 2)
     window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape" && !document.body.classList.contains("phase2")) setOpen(false);
     });
+
+    /* ===========================
+       Corazones brillantes cayendo
+       + explotan al hacer click
+       (canvas)
+    ============================ */
+
   
     /* ===========================
        Corazones brillantes cayendo
@@ -473,6 +470,7 @@ Te amo ,</p>
     const burst = [];    // corazones de explosión
     let lastT = performance.now();
     let spawnAcc = 0;
+    let fxEnabled = true; // se pone en false al entrar a la fase 2
 
     function rand(min, max){ return Math.random() * (max - min) + min; }
 
@@ -596,6 +594,7 @@ Te amo ,</p>
     }
 
     function loopFx(now){
+      if (!fxEnabled) return;
       const dt = Math.min(0.033, (now - lastT) / 1000);
       lastT = now;
       updateFx(dt);
@@ -617,7 +616,8 @@ Te amo ,</p>
     // Click para explotar corazones del fondo (sin interferir con el corazón principal/carta)
     document.addEventListener("click", (e) => {
       // Si el click fue en el botón del corazón principal (o dentro), no explotamos nada
-      if (e.target && e.target.closest && e.target.closest("#toggle, #nextHeart, .letter")) return;
+      if (e.target && e.target.closest && e.target.closest("#toggle")) return;
+      if (document.body.classList.contains("phase2")) return;
 
       const x = e.clientX;
       const y = e.clientY;
