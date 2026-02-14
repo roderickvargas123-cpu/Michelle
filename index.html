@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Para Michelle</title>
 
-  <!-- (Opcional) Fuente bonita. Si no carga, usa la del sistema. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@400;600&display=swap" rel="stylesheet">
@@ -60,10 +59,8 @@
       opacity: 1;
       transition: opacity 750ms ease;
     }
-    body.phase2 #fx{
-      opacity: 0;
-    }
-
+    /* MODIFICADO: Se eliminó la regla que ocultaba el canvas en phase2 para que sigan cayendo */
+    
     .scene{
       width:min(820px, 92vw);
       padding: 28px 18px 46px;
@@ -255,15 +252,13 @@
 </head>
 
 <body>
-    <!-- Fondo animado -->
-  <canvas id="fx"></canvas>
+    <canvas id="fx"></canvas>
 
   <div class="stage">
 
 <main class="scene">
     <button class="heart-button" id="toggle" aria-label="Abrir la carta">
       <div class="heart-wrap" aria-hidden="true">
-        <!-- MITAD IZQUIERDA -->
         <div class="heart-half left">
           <svg viewBox="0 0 512 512" role="img" aria-label="Corazón">
             <defs>
@@ -277,7 +272,6 @@
             </defs>
 
             <g clip-path="url(#clipLeft)">
-              <!-- Corazón -->
               <path
                 fill="url(#gLeft)"
                 d="M256 472s-32-25-62-47c-79-58-146-117-146-203
@@ -285,7 +279,6 @@
                    31-35 63-55 104-55 59 0 104 48 104 110
                    0 86-67 145-146 203-30 22-62 47-62 47z"
               />
-              <!-- Texto dentro (se recorta a la mitad también) -->
               <text
                 x="256" y="295"
                 text-anchor="middle"
@@ -298,7 +291,6 @@
           </svg>
         </div>
 
-        <!-- MITAD DERECHA -->
         <div class="heart-half right">
           <svg viewBox="0 0 512 512" role="img" aria-label="Corazón">
             <defs>
@@ -338,19 +330,16 @@
     <section class="letter letter1" id="letter" aria-live="polite">
       <div class="title">Mi carta para ti</div>
 
-      <!-- ✅ AQUÍ EDITAS TU TEXTO (puedes poner saltos de línea) -->
       <p class="content" id="letterText">Hola Cachetona,
 
           Amor, espero que te guste mi carta, en verdad te quisiera dar flores o algo que siempre hayas querido, aun asi se que valoras cualquier cosa que haga, como siempre, en verdad me siento muy afortunado de ternete conmigo cada dia, contigo a mi lado nada es aburrido y siempre estoy feliz, gracias por estar para mi aunque a veces estes estresada, siempre estare agradecido contigo por darme la oportunidad de desmotrarte mi amor
 
 Te amo ,</p>
 
-      <!-- ✅ FIRMA (opcional) -->
       <div class="signature" id="signature">De rick</div>
     </section>
   </main>
 
-  <!-- ======= FASE 2 (aparece 20s después de abrir) ======= -->
   <section class="final" id="final" aria-live="polite">
     <div class="final-heart" aria-hidden="true">
       <svg viewBox="0 0 512 512" role="img" aria-label="Corazón grande">
@@ -392,7 +381,6 @@ Te amo ,</p>
     <article class="letter letter2" id="letter2">
       <div class="title">CACHETONA</div>
 
-      <!-- ✅ AQUÍ EDITAS EL TEXTO DE LA 2DA CARTA -->
       <p class="content" id="letterText2">De verdad te adoro y siempre me sentire orgulloso de la persona que eres, tambien por la confianza que tienes ahora conmigo, te juro que todo lo que venga de ti se quedara siempre conmigo, todo lo que has compartido conmigo de verdad lo aprecio mucho, y espero algun dia poder abrirme mas contigo, no se expresarme pero contigo aprendere a hacerlo. TE AMO CACHETONA
 
 Te amo,</p>
@@ -428,9 +416,7 @@ Te amo,</p>
       document.body.classList.remove("open");
       document.body.classList.add("phase2");
 
-      // Pausa el canvas para ahorrar recursos (se detiene solo en el próximo frame)
-      fxEnabled = false;
-      try { ctx.clearRect(0, 0, innerWidth, innerHeight); } catch(_) {}
+      // MODIFICADO: Se eliminó fxEnabled = false y el ctx.clearRect para que la animación continúe
     }
 
     function schedulePhase2(){
@@ -467,13 +453,6 @@ Te amo,</p>
        + explotan al hacer click
        (canvas)
     ============================ */
-
-  
-    /* ===========================
-       Corazones brillantes cayendo
-       + explotan al hacer click
-       (canvas)
-    ============================ */
     const canvas = document.getElementById("fx");
     const ctx = canvas.getContext("2d", { alpha: true });
 
@@ -492,7 +471,7 @@ Te amo,</p>
     const burst = [];    // corazones de explosión
     let lastT = performance.now();
     let spawnAcc = 0;
-    let fxEnabled = true; // se pone en false al entrar a la fase 2
+    let fxEnabled = true; // El script lo mantiene en true siempre
 
     function rand(min, max){ return Math.random() * (max - min) + min; }
 
@@ -639,7 +618,9 @@ Te amo,</p>
     document.addEventListener("click", (e) => {
       // Si el click fue en el botón del corazón principal (o dentro), no explotamos nada
       if (e.target && e.target.closest && e.target.closest("#toggle")) return;
-      if (document.body.classList.contains("phase2")) return;
+      
+      // MODIFICADO: Se eliminó el bloqueo de phase2 para permitir clicks en la segunda carta
+      // if (document.body.classList.contains("phase2")) return;
 
       const x = e.clientX;
       const y = e.clientY;
