@@ -33,13 +33,24 @@
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color: #fff;
       overflow:hidden;
+    
+    /* Canvas de efectos (corazones cayendo) */
+    #fx{
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none; /* no bloquea clicks del contenido */
     }
+}
 
     .scene{
       width:min(820px, 92vw);
       padding: 28px 18px 46px;
       text-align:center;
       position:relative;
+          z-index: 1; /* encima del canvas */
     }
 
     .hint{
@@ -164,7 +175,10 @@
 </head>
 
 <body>
-  <main class="scene">
+    <!-- Fondo animado -->
+  <canvas id="fx"></canvas>
+
+<main class="scene">
     <button class="heart-button" id="toggle" aria-label="Abrir la carta">
       <div class="heart-wrap" aria-hidden="true">
         <!-- MITAD IZQUIERDA -->
@@ -274,6 +288,188 @@ Te amo ,</p>
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape") setOpen(false);
     });
+  
+    /* ===========================
+       Corazones brillantes cayendo
+       + explotan al hacer click
+       (canvas)
+    ============================ */
+    const canvas = document.getElementById("fx");
+    const ctx = canvas.getContext("2d", { alpha: true });
+
+    const DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    function resizeFx(){
+      canvas.width = Math.floor(innerWidth * DPR);
+      canvas.height = Math.floor(innerHeight * DPR);
+      canvas.style.width = innerWidth + "px";
+      canvas.style.height = innerHeight + "px";
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    }
+    addEventListener("resize", resizeFx);
+    resizeFx();
+
+    const falling = [];  // corazones que caen
+    const burst = [];    // corazones de explosión
+    let lastT = performance.now();
+    let spawnAcc = 0;
+
+    function rand(min, max){ return Math.random() * (max - min) + min; }
+
+    function heartPath(c, size){
+      c.beginPath();
+      const s = size;
+      c.moveTo(0, -0.22*s);
+      c.bezierCurveTo( 0.50*s, -0.78*s,  1.18*s, -0.08*s, 0, 0.92*s);
+      c.bezierCurveTo(-1.18*s, -0.08*s, -0.50*s, -0.78*s, 0, -0.22*s);
+      c.closePath();
+    }
+
+    function drawHeart(x, y, size, rot, alpha, glow){
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rot);
+
+      ctx.shadowBlur = glow;
+      ctx.shadowColor = `rgba(255, 90, 170, ${0.7 * alpha})`;
+
+      const g = ctx.createLinearGradient(-size, -size, size, size);
+      g.addColorStop(0, `rgba(255, 125, 195, ${alpha})`);
+      g.addColorStop(1, `rgba(255, 60, 110, ${alpha})`);
+      ctx.fillStyle = g;
+
+      heartPath(ctx, size);
+      ctx.fill();
+
+      // highlight sutil
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = 0.18 * alpha;
+      ctx.fillStyle = "white";
+      ctx.beginPath();
+      ctx.ellipse(-0.22*size, -0.18*size, 0.18*size, 0.12*size, -0.6, 0, Math.PI*2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function spawnFalling(){
+      if (falling.length > 70) return;
+      const size = rand(8, 18);
+      const x = rand(10, innerWidth - 10);
+      const y = rand(-40, -10);
+      falling.push({
+        x, y,
+        r: size,
+        vy: rand(18, 55),
+        drift: rand(12, 40),
+        phase: rand(0, Math.PI*2),
+        w: rand(0.8, 1.8),
+        rot: rand(-0.6, 0.6),
+        vr: rand(-0.6, 0.6),
+        glow: rand(8, 18),
+        alpha: rand(0.55, 0.95)
+      });
+    }
+
+    function explodeAt(h){
+      const count = Math.floor(rand(10, 18));
+      for (let i=0; i<count; i++){
+        const ang = rand(0, Math.PI*2);
+        const spd = rand(90, 220);
+        burst.push({
+          x: h.x,
+          y: h.y,
+          r: rand(Math.max(5, h.r*0.35), Math.max(7, h.r*0.55)),
+          vx: Math.cos(ang) * spd,
+          vy: Math.sin(ang) * spd - rand(20, 80),
+          rot: rand(-1.2, 1.2),
+          vr: rand(-2.4, 2.4),
+          life: 0,
+          ttl: rand(0.55, 0.95),
+          glow: rand(6, 14),
+          alpha: 1
+        });
+      }
+    }
+
+    function updateFx(dt){
+      spawnAcc += dt;
+      const rate = 0.13; // menor = más corazones
+      while (spawnAcc > rate){
+        spawnAcc -= rate;
+        spawnFalling();
+      }
+
+      for (let i = falling.length - 1; i >= 0; i--){
+        const h = falling[i];
+        h.phase += h.w * dt;
+        h.x += Math.sin(h.phase) * (h.drift * dt);
+        h.y += h.vy * dt;
+        h.rot += h.vr * dt;
+
+        if (h.y - h.r > innerHeight + 60) falling.splice(i, 1);
+      }
+
+      const g = 420;
+      for (let i = burst.length - 1; i >= 0; i--){
+        const p = burst[i];
+        p.life += dt;
+        const t = p.life / p.ttl;
+
+        p.vy += g * dt;
+        p.vx *= Math.pow(0.985, 60 * dt);
+        p.vy *= Math.pow(0.985, 60 * dt);
+
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.rot += p.vr * dt;
+
+        p.alpha = Math.max(0, 1 - t);
+        if (p.life >= p.ttl) burst.splice(i, 1);
+      }
+    }
+
+    function renderFx(){
+      ctx.clearRect(0, 0, innerWidth, innerHeight);
+      for (const h of falling) drawHeart(h.x, h.y, h.r, h.rot, h.alpha, h.glow);
+      for (const p of burst) drawHeart(p.x, p.y, p.r, p.rot, p.alpha, p.glow);
+    }
+
+    function loopFx(now){
+      const dt = Math.min(0.033, (now - lastT) / 1000);
+      lastT = now;
+      updateFx(dt);
+      renderFx();
+      requestAnimationFrame(loopFx);
+    }
+    requestAnimationFrame(loopFx);
+
+    function hitTest(x, y){
+      for (let i = falling.length - 1; i >= 0; i--){
+        const h = falling[i];
+        const dx = x - h.x, dy = y - h.y;
+        const rad = h.r * 1.05;
+        if (dx*dx + dy*dy <= rad*rad) return i;
+      }
+      return -1;
+    }
+
+    // Click para explotar corazones del fondo (sin interferir con el corazón principal/carta)
+    document.addEventListener("click", (e) => {
+      // Si el click fue en el botón del corazón principal (o dentro), no explotamos nada
+      if (e.target && e.target.closest && e.target.closest("#toggle")) return;
+
+      const x = e.clientX;
+      const y = e.clientY;
+
+      const idx = hitTest(x, y);
+      if (idx !== -1){
+        const h = falling[idx];
+        explodeAt(h);
+        falling.splice(idx, 1);
+        e.stopPropagation();
+      }
+    }, true);
+
   </script>
 </body>
 </html>
