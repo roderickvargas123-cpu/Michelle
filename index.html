@@ -175,10 +175,11 @@
   
     /* Carta con contorno rosa iluminado (aplica a ambas cartas) */
     .letter.glow{
-      border: 2px solid rgba(255, 120, 200, .55);
+      border: 2px solid rgba(255, 70, 180, .92);
       box-shadow: var(--shadow),
-                  0 0 0 2px rgba(255, 120, 200, .18),
-                  0 0 28px rgba(255, 120, 200, .22);
+                  0 0 0 3px rgba(255, 70, 180, .32),
+                  0 0 42px rgba(255, 70, 180, .55),
+                  0 0 90px rgba(255, 70, 180, .22);
     }
 
     /* Corazón intermedio (sale a los 20s) */
@@ -212,6 +213,12 @@
       pointer-events: none !important;
       transition-delay: 0ms !important;
     }
+    body.show-second #letter{
+      opacity: 0 !important;
+      transform: translateY(18px) scale(.985) !important;
+      pointer-events: none !important;
+      transition-delay: 0ms !important;
+    }
     body.to-heart .next-heart{
       opacity: 1;
       transform: translateY(0) scale(1);
@@ -232,10 +239,11 @@
       transition-delay: 140ms;
     }
     body.show-second .next-heart{
-      opacity: 0;
-      transform: translateY(18px) scale(.92);
-      pointer-events: none;
+      opacity: 1;
+      transform: translateY(0) scale(.78);
+      pointer-events: none; /* decorativo cuando ya está la 2da carta */
       transition-delay: 0ms;
+      margin: 10px auto 14px;
     }
 
   </style>
@@ -386,7 +394,15 @@ Te amo ,</p>
       if (isOpen){
         stageTimer = setTimeout(() => {
           if (document.body.classList.contains("open") && !document.body.classList.contains("show-second")) {
+            // 1) la carta actual se desvanece y aparece el nuevo corazón
             document.body.classList.add("to-heart");
+
+            // 2) poquito después aparece la segunda carta automáticamente
+            stageTimer2 = setTimeout(() => {
+              if (document.body.classList.contains("open")) {
+                document.body.classList.add("show-second");
+              }
+            }, 650);
           }
         }, 20000);
       }
@@ -402,6 +418,7 @@ Te amo ,</p>
     const nextHeart = document.getElementById("nextHeart");
     const letter2 = document.getElementById("letter2");
     let stageTimer = null;
+    let stageTimer2 = null;
 
     function resetStages(){
       document.body.classList.remove("to-heart", "show-second");
@@ -409,13 +426,16 @@ Te amo ,</p>
         clearTimeout(stageTimer);
         stageTimer = null;
       }
+      if (stageTimer2){
+        clearTimeout(stageTimer2);
+        stageTimer2 = null;
+      }
     }
 
     // Click del corazón intermedio -> mostrar segunda carta
     if (nextHeart){
       nextHeart.addEventListener("click", (e) => {
         e.stopPropagation();
-        document.body.classList.remove("to-heart");
         document.body.classList.add("show-second");
       });
     }
