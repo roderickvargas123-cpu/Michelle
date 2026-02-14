@@ -353,7 +353,7 @@ Te amo ,</p>
 
     function spawnFalling(){
       if (falling.length > 70) return;
-      const size = rand(8, 18);
+      const size = rand(16, 32);
       const x = rand(10, innerWidth - 10);
       const y = rand(-40, -10);
       falling.push({
@@ -378,7 +378,7 @@ Te amo ,</p>
         burst.push({
           x: h.x,
           y: h.y,
-          r: rand(Math.max(5, h.r*0.35), Math.max(7, h.r*0.55)),
+          r: rand(Math.max(5, h.r*0.55), Math.max(12, h.r*0.85)),
           vx: Math.cos(ang) * spd,
           vy: Math.sin(ang) * spd - rand(20, 80),
           rot: rand(-1.2, 1.2),
