@@ -171,6 +171,69 @@
       body.open .heart-half.right{ transform: translateX(105px) rotate(10deg); }
       .letter{ padding: 18px 16px 14px; }
     }
+  
+    /* Carta con contorno rosa iluminado (aplica a ambas cartas) */
+    .letter.glow{
+      border: 2px solid rgba(255, 120, 200, .55);
+      box-shadow: var(--shadow),
+                  0 0 0 2px rgba(255, 120, 200, .18),
+                  0 0 28px rgba(255, 120, 200, .22);
+    }
+
+    /* Corazón intermedio (sale a los 20s) */
+    .next-heart{
+      width: min(240px, 70vw);
+      margin: 22px auto 0;
+      opacity: 0;
+      transform: translateY(18px) scale(.92);
+      transition: opacity 500ms ease, transform 500ms ease;
+      pointer-events: none;
+      filter: drop-shadow(0 18px 28px rgba(0,0,0,.55));
+      user-select: none;
+    }
+    .next-heart button{
+      width: 100%;
+      border: 0;
+      background: transparent;
+      padding: 0;
+      cursor: pointer;
+      display: block;
+    }
+    .next-heart svg{ width: 100%; height: auto; display:block; }
+
+    /* Cuando pasan 20s: la primera carta se “convierte” en corazón */
+    body.to-heart #letter{
+      opacity: 0 !important;
+      transform: translateY(18px) scale(.985) !important;
+      pointer-events: none !important;
+      transition-delay: 0ms !important;
+    }
+    body.to-heart .next-heart{
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+      transition-delay: 120ms;
+    }
+
+    /* Segunda carta (oculta hasta que se presione el corazón) */
+    #letter2{
+      opacity: 0;
+      transform: translateY(20px) scale(.985);
+      pointer-events: none;
+    }
+    body.show-second #letter2{
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+      transition-delay: 140ms;
+    }
+    body.show-second .next-heart{
+      opacity: 0;
+      transform: translateY(18px) scale(.92);
+      pointer-events: none;
+      transition-delay: 0ms;
+    }
+
   </style>
 </head>
 
@@ -253,7 +316,7 @@
 
     <div class="hint" id="hint">Haz click para abrir 💌</div>
 
-    <section class="letter" id="letter" aria-live="polite">
+    <section class="letter glow" id="letter" aria-live="polite">
       <div class="title">Mi carta para ti</div>
 
       <!-- ✅ AQUÍ EDITAS TU TEXTO (puedes poner saltos de línea) -->
@@ -266,6 +329,48 @@ Te amo ,</p>
       <!-- ✅ FIRMA (opcional) -->
       <div class="signature" id="signature">De rick</div>
     </section>
+    <!-- Corazón que aparece 20s después (click para ver nueva carta) -->
+    <div class="next-heart" id="nextHeart" aria-hidden="false">
+      <button type="button" aria-label="Abrir la segunda carta">
+        <svg viewBox="0 0 512 512" role="img" aria-label="Corazón">
+          <defs>
+            <linearGradient id="gNext" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="var(--heart2)"/>
+              <stop offset="1" stop-color="var(--heart1)"/>
+            </linearGradient>
+          </defs>
+          <path
+            fill="url(#gNext)"
+            d="M256 472s-32-25-62-47c-79-58-146-117-146-203
+               0-62 45-110 104-110 41 0 73 20 104 55
+               31-35 63-55 104-55 59 0 104 48 104 110
+               0 86-67 145-146 203-30 22-62 47-62 47z"
+          />
+          <text
+            x="256" y="305"
+            text-anchor="middle"
+            font-size="52"
+            font-family="Great Vibes, cursive"
+            fill="rgba(255,255,255,.92)"
+            style="paint-order:stroke; stroke: rgba(0,0,0,.18); stroke-width: 6px;"
+          >Tócame</text>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Segunda carta -->
+    <section class="letter glow" id="letter2" aria-live="polite">
+      <div class="title">Mi segunda carta para ti</div>
+
+      <!-- ✅ EDITA TU SEGUNDA CARTA AQUÍ -->
+      <p class="content" id="letterText2">Aquí va tu segundo texto 💗
+
+Puedes escribir lo que tú quieras.</p>
+
+      <div class="signature" id="signature2">Tu nombre aquí</div>
+      <div class="small">Tip: puedes cerrar la carta principal cuando quieras.</div>
+    </section>
+
   </main>
 
   <script>
@@ -274,10 +379,44 @@ Te amo ,</p>
 
     function setOpen(isOpen){
       document.body.classList.toggle("open", isOpen);
+      // Reiniciar etapas cada vez que abras/cierres
+      resetStages();
+      if (isOpen){
+        stageTimer = setTimeout(() => {
+          if (document.body.classList.contains("open") && !document.body.classList.contains("show-second")) {
+            document.body.classList.add("to-heart");
+          }
+        }, 20000);
+      }
       toggleBtn.setAttribute("aria-label", isOpen ? "Cerrar la carta" : "Abrir la carta");
       hint.textContent = isOpen ? "Haz click para cerrar 💗" : "Haz click para abrir 💌";
     }
 
+
+    /* ===========================
+       Etapa 2: a los 20s, la carta se convierte en corazón
+       Etapa 3: click al corazón -> segunda carta
+    ============================ */
+    const nextHeart = document.getElementById("nextHeart");
+    const letter2 = document.getElementById("letter2");
+    let stageTimer = null;
+
+    function resetStages(){
+      document.body.classList.remove("to-heart", "show-second");
+      if (stageTimer){
+        clearTimeout(stageTimer);
+        stageTimer = null;
+      }
+    }
+
+    // Click del corazón intermedio -> mostrar segunda carta
+    if (nextHeart){
+      nextHeart.addEventListener("click", (e) => {
+        e.stopPropagation();
+        document.body.classList.remove("to-heart");
+        document.body.classList.add("show-second");
+      });
+    }
     // Click en cualquier parte del botón/corazón
     toggleBtn.addEventListener("click", () => {
       const isOpen = document.body.classList.contains("open");
@@ -353,7 +492,7 @@ Te amo ,</p>
 
     function spawnFalling(){
       if (falling.length > 70) return;
-      const size = rand(16, 32);
+      const size = rand(8, 18);
       const x = rand(10, innerWidth - 10);
       const y = rand(-40, -10);
       falling.push({
@@ -378,7 +517,7 @@ Te amo ,</p>
         burst.push({
           x: h.x,
           y: h.y,
-          r: rand(Math.max(5, h.r*0.55), Math.max(12, h.r*0.85)),
+          r: rand(Math.max(5, h.r*0.35), Math.max(7, h.r*0.55)),
           vx: Math.cos(ang) * spd,
           vy: Math.sin(ang) * spd - rand(20, 80),
           rot: rand(-1.2, 1.2),
@@ -456,7 +595,7 @@ Te amo ,</p>
     // Click para explotar corazones del fondo (sin interferir con el corazón principal/carta)
     document.addEventListener("click", (e) => {
       // Si el click fue en el botón del corazón principal (o dentro), no explotamos nada
-      if (e.target && e.target.closest && e.target.closest("#toggle")) return;
+      if (e.target && e.target.closest && e.target.closest("#toggle, #nextHeart, .letter")) return;
 
       const x = e.clientX;
       const y = e.clientY;
