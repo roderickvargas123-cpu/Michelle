@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carta para Michelle ❤️</title>
+
+<style>
+
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#ff9aa2,#ffdde1);
+    font-family:Arial, Helvetica, sans-serif;
+    overflow:hidden;
+    cursor:pointer;
+}
+
+.container{
+    position:relative;
+    text-align:center;
+}
+
+.heart{
+    position:relative;
+    width:200px;
+    height:180px;
+    transform:rotate(-45deg);
+    background:#ff2e63;
+    margin:auto;
+    transition:1s ease;
+}
+
+.heart:before,
+.heart:after{
+    content:"";
+    position:absolute;
+    width:200px;
+    height:180px;
+    background:#ff2e63;
+    border-radius:50%;
+}
+
+.heart:before{
+    top:-100px;
+    left:0;
+}
+
+.heart:after{
+    left:100px;
+    top:0;
+}
+
+.name{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%) rotate(45deg);
+    color:white;
+    font-size:28px;
+    font-weight:bold;
+    z-index:2;
+}
+
+.left, .right{
+    position:absolute;
+    width:50%;
+    height:100%;
+    top:0;
+    background:#ff2e63;
+    transition:1s ease;
+}
+
+.left{
+    left:0;
+    transform-origin:left;
+}
+
+.right{
+    right:0;
+    transform-origin:right;
+}
+
+.open .left{
+    transform:rotateY(-120deg);
+}
+
+.open .right{
+    transform:rotateY(120deg);
+}
+
+.letter{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%) scale(0);
+    width:320px;
+    padding:25px;
+    background:white;
+    border-radius:12px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.25);
+    transition:1s ease;
+}
+
+.open .letter{
+    transform:translate(-50%,-50%) scale(1);
+}
+
+.letter h2{
+    margin-top:0;
+    color:#ff2e63;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container" onclick="openHeart()">
+
+    <div id="heartBox">
+        <div class="heart"></div>
+        <div class="name">Michelle</div>
+
+        <div class="left"></div>
+        <div class="right"></div>
+    </div>
+
+    <div class="letter">
+        <h2>Para Michelle ❤️</h2>
+        <p>
+            Amor, espero que te guste mi carta, en verdad te quisiera dar flores o algo que siempre hayas querido, aun asi se que valoras cualquier cosa que haga, como siempre, en verdad me siento muy afortunado de ternete conmigo cada dia, contigo a mi lado nada es aburrido y siempre estoy feliz, gracias por estar para mi aunque a veces estes estresada, siempre estare agradecido contigo por darme la oportunidad de desmotrarte mi amor
+        </p>
+    </div>
+
+</div>
+
+<script>
+function openHeart(){
+    document.body.classList.toggle("open");
+}
+</script>
+
+</body>
+</html>
