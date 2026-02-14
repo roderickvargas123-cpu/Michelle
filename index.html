@@ -35,6 +35,20 @@
       overflow:hidden;
     }
 
+    /* Contenedor para superponer escena 1 y fase 2 en el mismo centro */
+    .stage{
+      position: relative;
+      width: 100%;
+      height: 100dvh;
+      display: grid;
+      place-items: center;
+      z-index: 1;
+    }
+    .scene, .final{
+      grid-area: 1 / 1;
+    }
+
+
     /* Canvas de efectos (corazones cayendo) */
     #fx{
       position: fixed;
@@ -134,7 +148,11 @@
       background: var(--paper);
       color: var(--ink);
       border-radius: 18px;
-      box-shadow: var(--shadow);
+      border: 2px solid rgba(255, 70, 155, .95);
+      box-shadow: var(--shadow),
+                  0 0 0 2px rgba(255, 70, 155, .95),
+                  0 0 22px rgba(255, 70, 155, .90),
+                  0 0 60px rgba(255, 70, 155, .55);
       padding: 22px 22px 18px;
       text-align:left;
 
@@ -239,6 +257,8 @@
 <body>
     <!-- Fondo animado -->
   <canvas id="fx"></canvas>
+
+  <div class="stage">
 
 <main class="scene">
     <button class="heart-button" id="toggle" aria-label="Abrir la carta">
@@ -382,6 +402,8 @@ Te amo,</p>
 
     <div class="small"><b>#letterText2</b> en el HTML.</div>
   </section>
+
+  </div>
 
   <script>
     const toggleBtn = document.getElementById("toggle");
